@@ -30,7 +30,7 @@ class AgenticRAG:
         self.mcp_client = MultiServerMCPClient({
             "hybrid_search": {
                 "command": "python",
-                "args": ["prod_assistant/mcp_servers/product_search_server.py"],  # server with retriever+websearch
+                "args": ["prod_assistant\mcp_server\product_search_server.py"],  # server with retriever+websearch
                 "transport": "stdio"
             }
         })
@@ -55,8 +55,6 @@ class AgenticRAG:
             chain = prompt | self.llm | StrOutputParser()
             response = chain.invoke({"question": last_message})
             return {"messages": [HumanMessage(content=response)]}
-
-
 
     def _vector_retriever(self, state: AgentState):
         print("--- RETRIEVER (MCP) ---")
@@ -123,32 +121,40 @@ class AgenticRAG:
         workflow.add_edge(START, "Assistant")
         workflow.add_conditional_edges(
             "Assistant",
+            
+            
             lambda state: "Retriever" if "TOOL" in state["messages"][-1].content else END,
-            {"Retriever": "Retriever", END: END},
+            
+            {
+                "Retriever": "Retriever", 
+                END: END
+            },
         )
         workflow.add_conditional_edges(
+            
             "Retriever",
+            
             self._grade_documents,
-            {"generator": "Generator", "rewriter": "Rewriter"},
+            
+            {"generator": "Generator", 
+            "rewriter": "Rewriter"},
         )
         workflow.add_edge("Generator", END)
-
-        # New path: Rewriter → WebSearch → END
+        
         workflow.add_edge("Rewriter", "WebSearch")
-        workflow.add_edge("WebSearch", "Assistant")
-        workflow.add_edge("Assistant", END)
-
+        
+        workflow.add_edge("WebSearch", "Generator")
+        
         return workflow
 
     # ---------- Public Run ----------
     def run(self, query: str, thread_id: str = "default_thread") -> str:
         """Run the workflow for a given query and return the final answer."""
-        result = self.app.invoke({"messages": [HumanMessage(content=query)]},
-                                config={"configurable": {"thread_id": thread_id}})
+        result = self.app.invoke({"messages": [HumanMessage(content=query)]},                         config={"configurable": {"thread_id": thread_id}})
         return result["messages"][-1].content
 
 
 if __name__ == "__main__":
     rag_agent = AgenticRAG()
-    answer = rag_agent.run("What is the price of iPhone 15?")
+    answer = rag_agent.run("What is the price of iPhone 16?")
     print("\nFinal Answer:\n", answer)

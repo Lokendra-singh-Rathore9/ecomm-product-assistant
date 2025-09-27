@@ -1,3 +1,4 @@
+
 import uvicorn
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
@@ -5,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from langchain_core.messages import HumanMessage
-from workflow.agentic_rag_workflow import AgenticRAG
+from workflow.agentic_workflow_with_mcp_websearch import AgenticRAG
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -32,3 +33,7 @@ async def chat(msg: str = Form(...)):
     answer = rag_agent.run(msg)   # run() already returns final answer string
     print(f"Agentic Response: {answer}")
     return answer
+
+
+
+# uvicorn prod_assistant.router.main:app --reload --port 8000   
