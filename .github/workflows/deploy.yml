@@ -91,13 +91,25 @@ jobs:
       # Create/Update Kubernetes Secret (for API keys)
       - name: Create Kubernetes secret for API keys
         run: |
-          kubectl create secret generic product-assistant-secrets \
-            --from-literal=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-            --from-literal=GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
-            --from-literal=ASTRA_DB_API_ENDPOINT=${{ secrets.ASTRA_DB_API_ENDPOINT }} \
-            --from-literal=ASTRA_DB_APPLICATION_TOKEN=${{ secrets.ASTRA_DB_APPLICATION_TOKEN }} \
-            --from-literal=ASTRA_DB_KEYSPACE=${{ secrets.ASTRA_DB_KEYSPACE }} \
-            --dry-run=client -o yaml | kubectl apply -f -
+            echo "Deleting existing secret if present..."
+            kubectl delete secret product-assistant-secrets --ignore-not-found=true
+            echo "Creating new secret..."
+            kubectl create secret generic product-assistant-secrets \
+              --from-literal=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+              --from-literal=GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
+              --from-literal=ASTRA_DB_API_ENDPOINT=${{ secrets.ASTRA_DB_API_ENDPOINT }} \
+              --from-literal=ASTRA_DB_APPLICATION_TOKEN=${{ secrets.ASTRA_DB_APPLICATION_TOKEN }} \
+              --from-literal=ASTRA_DB_KEYSPACE=${{ secrets.ASTRA_DB_KEYSPACE }}
+            echo "Secret created successfully"
+
+        # run: |
+        #   # kubectl create secret generic product-assistant-secrets \
+        #   #   --from-literal=OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+        #   #   --from-literal=GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
+        #   #   --from-literal=ASTRA_DB_API_ENDPOINT=${{ secrets.ASTRA_DB_API_ENDPOINT }} \
+        #   #   --from-literal=ASTRA_DB_APPLICATION_TOKEN=${{ secrets.ASTRA_DB_APPLICATION_TOKEN }} \
+        #   #   --from-literal=ASTRA_DB_KEYSPACE=${{ secrets.ASTRA_DB_KEYSPACE }} \
+        #   #   --dry-run=client -o yaml | kubectl apply -f -
 
       # Deploy manifests
       - name: Apply Kubernetes manifests
