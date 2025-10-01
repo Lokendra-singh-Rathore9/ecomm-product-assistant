@@ -87,11 +87,7 @@ jobs:
         run: |
           ls -la ~/.kube || true
           cat ~/.kube/config || true
-
-      - name: Check kubectl installation
-        run: |
-          which kubectl || echo "kubectl not found"
-          kubectl version --client || echo "kubectl not working"
+      
       # Create/Update Kubernetes Secret (for API keys)
       - name: Create Kubernetes secret for API keys
         run: |
